@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Music Festival Lineup Explorer</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #f6f7fb;
+    color: #20242c;
+}
+
+/* Header */
+header {
+    background: linear-gradient(135deg, #171b2d, #3b246b);
+    color: white;
+    padding: 28px 7%;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #b8f3d2;
+}
+
+.subtitle {
+    margin-top: 7px;
+    color: #d9d8e8;
+    font-size: 14px;
+}
+
+.status {
+    background: #d9f9e8;
+    color: #16804c;
+    padding: 9px 17px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Main */
+main {
+    width: 86%;
+    max-width: 1250px;
+    margin: 35px auto;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.hero h1 {
+    font-size: 40px;
+    color: #20243a;
+}
+
+.hero p {
+    margin-top: 10px;
+    color: #666b78;
+}
+
+/* Filters */
+.filters {
+    background: white;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(30, 30, 60, 0.08);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.filter label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #686d7a;
+    margin-bottom: 7px;
+}
+
+.filter select,
+.filter input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dddfea;
+    border-radius: 10px;
+    outline: none;
+    background: #fafbfe;
+}
+
+.filter select:focus,
+.filter input:focus {
+    border-color: #8065d8;
+}
+
+.reset-btn {
+    margin-top: 19px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #eeeafc;
+    color: #6548bd;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Festival cards */
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.section-title h2 {
+    font-size: 23px;
+}
+
+#count {
+    color: #747987;
+    font-size: 14px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 17px;
+    overflow: hidden;
+    box-shadow: 0 7px 25px rgba(30, 30, 60, 0.08);
+    transition: 0.25s;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(30, 30, 60, 0.14);
+}
+
+.card-top {
+    padding: 22px;
+    background: linear-gradient(135deg, #7656d8, #b96de0);
+    color: white;
+}
+
+.card-top h3 {
+    font-size: 22px;
+}
+
+.card-top p {
+    margin-top: 7px;
+    opacity: 0.9;
+    font-size: 13px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 13px;
+    font-size: 14px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 15px;
+    background: #edf9f3;
+    color: #16804c;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.details-btn {
+    width: 100%;
+    margin-top: 7px;
+    padding: 11px;
+    border: none;
+    border-radius: 9px;
+    background: #252943;
+    color: white;
+    cursor: pointer;
+}
+
+.details-btn:hover {
+    background: #6548bd;
+}
+
+.no-result {
+    display: none;
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    color: #777;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 17, 30, 0.7);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-box {
+    background: white;
+    width: 420px;
+    max-width: 100%;
+    padding: 28px;
+    border-radius: 18px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 18px;
+    top: 13px;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.modal-box h2 {
+    color: #6548bd;
+    margin-bottom: 15px;
+}
+
+.modal-box p {
+    margin: 10px 0;
+    color: #555;
+}
+
+footer {
+    text-align: center;
+    padding: 30px;
+    margin-top: 40px;
+    color: #777;
+    font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .filters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filters,
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="topbar">
+        <div>
+            <div class="logo">🎵 Dynamic <span>Music Festival</span></div>
+            <div class="subtitle">Build an event page filtering performers by genre, stage, and performance date.</div>
+        </div>
+        <div class="status">⚙ AVAILABLE</div>
+    </div>
+</header>
+
+<main>
+
+    <section class="hero">
+        <h1>Lineup Explorer</h1>
+        <p>Find your favorite performers and discover what's happening on every stage.</p>
+    </section>
+
+    <section class="filters">
+
+        <div class="filter">
+            <label>SEARCH ARTIST</label>
+            <input type="text" id="search" placeholder="e.g. Arjun...">
+        </div>
+
+        <div class="filter">
+            <label>GENRE</label>
+            <select id="genre">
+                <option value="all">All Genres</option>
+                <option value="Pop">Pop</option>
+                <option value="Rock">Rock</option>
+                <option value="EDM">EDM</option>
+                <option value="Indie">Indie</option>
+                <option value="Hip-Hop">Hip-Hop</option>
+            </select>
+        </div>
+
+        <div class="filter">
+            <label>STAGE</label>
+            <select id="stage">
+                <option value="all">All Stages</option>
+                <option value="Main Stage">Main Stage</option>
+                <option value="Sunset Stage">Sunset Stage</option>
+                <option value="Club Stage">Club Stage</option>
+            </select>
+        </div>
+
+        <div class="filter">
+            <label>DATE</label>
+            <select id="date">
+                <option value="all">All Dates</option>
+                <option value="Sep 20">Sep 20</option>
+                <option value="Sep 21">Sep 21</option>
+                <option value="Sep 22">Sep 22</option>
+            </select>
+        </div>
+
+        <button class="reset-btn" onclick="resetFilters()">↻ Reset Filters</button>
+    </section>
+
+    <div class="section-title">
+        <h2>🎤 Festival Performers</h2>
+        <span id="count"></span>
+    </div>
+
+    <section class="cards" id="cards">
+
+        <div class="card" data-name="Arjun Beats" data-genre="EDM" data-stage="Main Stage" data-date="Sep 20">
+            <div class="card-top">
+                <h3>Arjun Beats</h3>
+                <p>Electronic Dance Music</p>
+            </div>
+            <div class="card-body">
+                <div class="info"><span>🎧 Genre</span><b>EDM</b></div>
+                <div class="info"><span>📍 Stage</span><b>Main Stage</b></div>
+                <div class="info"><span>📅 Date</span><b>Sep 20</b></div>
+                <span class="badge">AVAILABLE</span>
+                <button class="details-btn" onclick="showDetails('Arjun Beats','EDM','Main Stage','Sep 20','8:30 PM')">View Details</button>
+            </div>
+        </div>
+
+        <div class="card" data-name="The Echoes" data-genre="Rock" data-stage="Sunset Stage" data-date="Sep 20">
+            <div class="card-top">
+                <h3>The Echoes</h3>
+                <p>Alternative Rock</p>
+            </div>
+            <div class="card-body">
+                <div class="info"><span>🎸 Genre</span><b>Rock</b></div>
+                <div class="info"><span>📍 Stage</span><b>Sunset Stage</b></div>
+                <div class="info"><span>📅 Date</span><b>Sep 20</b></div>
+                <span class="badge">AVAILABLE</span>
+                <button class="details-btn" onclick="showDetails('The Echoes','Rock','Sunset Stage','Sep 20','7:00 PM')">View Details</button>
+            </div>
+        </div>
+
+        <div class="card" data-name="Maya Soul" data-genre="Pop" data-stage="Main Stage" data-date="Sep 21">
+            <div class="card-top">
+                <h3>Maya Soul</h3>
+                <p>Contemporary Pop</p>
+            </div>
+            <div class="card-body">
+                <div class="info"><span>🎤 Genre</span><b>Pop</b></div>
+                <div class="info"><span>📍 Stage</span><b>Main Stage</b></div>
+                <div class="info"><span>📅 Date</span><b>Sep 21</b></div>
+                <span class="badge">AVAILABLE</span>
+                <button class="details-btn" onclick="showDetails('Maya Soul','Pop','Main Stage','Sep 21','9:00 PM')">View Details</button>
+            </div>
+        </div>
+
+        <div class="card" data-name="Neon Pulse" data-genre="EDM" data-stage="Club Stage" data-date="Sep 21">
+            <div class="card-top">
+                <h3>Neon Pulse</h3>
+                <p>Electronic / Dance</p>
+            </div>
+            <div class="card-body">
+                <div class="info"><span>🎧 Genre</span><b>EDM</b></div>
+                <div class="info"><span>📍 Stage</span><b>Club Stage</b></div>
+                <div class="info"><span>📅 Date</span><b>Sep 21</b></div>
+                <span class="badge">AVAILABLE</span>
+                <button class="details-btn" onclick="showDetails('Neon Pulse','EDM','Club Stage','Sep 21','10:00 PM')">View Details</button>
+            </div>
+        </div>
+
+        <div class="card" data-name="Riya & The Waves" data-genre="Indie" data-stage="Sunset Stage" data-date="Sep 22">
+            <div class="card-top">
+                <h3>Riya & The Waves</h3>
+                <p>Indie Pop</p>
+            </div>
+            <div class="card-body">
+                <div class="info"><span>🎸 Genre</span><b>Indie</b></div>
+                <div class="info"><span>📍 Stage</span><b>Sunset Stage</b></div>
+                <div class="info"><span>📅 Date</span><b>Sep 22</b></div>
+                <span class="badge">AVAILABLE</span>
+                <button class="details-btn" onclick="showDetails('Riya & The Waves','Indie','Sunset Stage','Sep 22','6:30 PM')">View Details</button>
+            </div>
+        </div>
+
+        <div class="card" data-name="MC Nova" data-genre="Hip-Hop" data-stage="Main Stage" data-date="Sep 22">
+            <div class="card-top">
+                <h3>MC Nova</h3>
+                <p>Hip-Hop / Rap</p>
+            </div>
+            <div class="card-body">
+                <div class="info"><span>🎤 Genre</span><b>Hip-Hop</b></div>
+                <div class="info"><span>📍 Stage</span><b>Main Stage</b></div>
+                <div class="info"><span>📅 Date</span><b>Sep 22</b></div>
+                <span class="badge">AVAILABLE</span>
+                <button class="details-btn" onclick="showDetails('MC Nova','Hip-Hop','Main Stage','Sep 22','8:00 PM')">View Details</button>
+            </div>
+        </div>
+
+    </section>
+
+    <div class="no-result" id="noResult">
+        <h3>No performers found 😕</h3>
+        <p>Try changing your search or filters.</p>
+    </div>
+
+</main>
+
+<footer>
+    © 2026 Dynamic Music Festival • Lineup Explorer
+</footer>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <span class="close" onclick="closeModal()">×</span>
+        <h2 id="modalName"></h2>
+        <p><b>🎵 Genre:</b> <span id="modalGenre"></span></p>
+        <p><b>📍 Stage:</b> <span id="modalStage"></span></p>
+        <p><b>📅 Date:</b> <span id="modalDate"></span></p>
+        <p><b>⏰ Performance:</b> <span id="modalTime"></span></p>
+        <br>
+        <span class="badge">✓ Performance Scheduled</span>
+    </div>
+</div>
+
+<script>
+const search = document.getElementById("search");
+const genre = document.getElementById("genre");
+const stage = document.getElementById("stage");
+const date = document.getElementById("date");
+const cards = document.querySelectorAll(".card");
+const count = document.getElementById("count");
+const noResult = document.getElementById("noResult");
+
+function filterCards() {
+    const searchText = search.value.toLowerCase();
+    const selectedGenre = genre.value;
+    const selectedStage = stage.value;
+    const selectedDate = date.value;
+
+    let visible = 0;
+
+    cards.forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        const cardGenre = card.dataset.genre;
+        const cardStage = card.dataset.stage;
+        const cardDate = card.dataset.date;
+
+        const matchesSearch = name.includes(searchText);
+        const matchesGenre = selectedGenre === "all" || cardGenre === selectedGenre;
+        const matchesStage = selectedStage === "all" || cardStage === selectedStage;
+        const matchesDate = selectedDate === "all" || cardDate === selectedDate;
+
+        if (matchesSearch && matchesGenre && matchesStage && matchesDate) {
+            card.style.display = "block";
+            visible++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    count.textContent = visible + " performer" + (visible !== 1 ? "s" : "") + " found";
+    noResult.style.display = visible === 0 ? "block" : "none";
+}
+
+function resetFilters() {
+    search.value = "";
+    genre.value = "all";
+    stage.value = "all";
+    date.value = "all";
+    filterCards();
+}
+
+function showDetails(name, genreValue, stageValue, dateValue, time) {
+    document.getElementById("modalName").textContent = name;
+    document.getElementById("modalGenre").textContent = genreValue;
+    document.getElementById("modalStage").textContent = stageValue;
+    document.getElementById("modalDate").textContent = dateValue;
+    document.getElementById("modalTime").textContent = time;
+
+    document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    if (event.target === document.getElementById("modal")) {
+        closeModal();
+    }
+};
+
+search.addEventListener("input", filterCards);
+genre.addEventListener("change", filterCards);
+stage.addEventListener("change", filterCards);
+date.addEventListener("change", filterCards);
+
+filterCards();
+</script>
+
+</body>
+</html>
