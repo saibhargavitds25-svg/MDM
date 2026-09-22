@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Music Festival — Lineup Explorer</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+:root{
+  --bg:#f5f6fb;--card:#fff;--text:#20243a;--muted:#707585;
+  --primary:#7656d8;--secondary:#b96de0;--dark:#191c30;
+  --green:#16804c;--border:#e2e4ed;
+}
+body{background:var(--bg);color:var(--text);transition:.3s}
+body.dark{--bg:#10121d;--card:#1b1e2b;--text:#f4f4f7;--muted:#a9adbb;--border:#303446}
+header{
+  background:linear-gradient(135deg,#171b2d,#3b246b);color:#fff;padding:28px 7%;
+  position:relative;overflow:hidden
+}
+header:after{content:"♪ ♫ ♩";position:absolute;right:7%;top:12px;font-size:65px;opacity:.08;letter-spacing:18px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.logo{font-size:27px;font-weight:bold}.logo span{color:#b8f3d2}
+.subtitle{margin-top:7px;color:#d9d8e8;font-size:14px}
+.header-actions{display:flex;gap:10px;flex-wrap:wrap}
+.header-btn,.status{border:0;border-radius:25px;padding:10px 15px;font-weight:bold;cursor:pointer}
+.status{background:#d9f9e8;color:#16804c}
+.header-btn{background:#ffffff18;color:#fff;border:1px solid #ffffff30}
+
+main{width:86%;max-width:1250px;margin:30px auto}
+.hero{text-align:center;margin-bottom:25px}
+.hero h1{font-size:40px}.hero p{margin-top:10px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--border);padding:17px;border-radius:15px;text-align:center}
+.stat b{font-size:24px;display:block;color:var(--primary)}.stat span{font-size:12px;color:var(--muted)}
+
+.filters{background:var(--card);padding:20px;border-radius:18px;box-shadow:0 8px 30px #1e1e3c12;display:grid;grid-template-columns:1.5fr repeat(3,1fr) auto;gap:12px;margin-bottom:25px}
+.filter label{display:block;font-size:11px;font-weight:bold;color:var(--muted);margin-bottom:7px}
+.filter select,.filter input{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;outline:none;background:var(--bg);color:var(--text)}
+.filter select:focus,.filter input:focus{border-color:var(--primary)}
+.reset-btn{padding:12px;border:0;border-radius:10px;background:#eeeafc;color:#6548bd;cursor:pointer;font-weight:bold;align-self:end}
+
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+.quick button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:9px 13px;border-radius:20px;cursor:pointer}
+.quick button.active,.quick button:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.section-title h2{font-size:23px}.count{color:var(--muted);font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:17px;overflow:hidden;box-shadow:0 7px 25px #1e1e3c0d;transition:.25s;position:relative}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 30px #1e1e3c1a}
+.card-top{padding:22px;background:linear-gradient(135deg,#7656d8,#b96de0);color:white;position:relative}
+.card-top h3{font-size:22px;padding-right:30px}.card-top p{margin-top:7px;opacity:.9;font-size:13px}
+.favorite{position:absolute;right:14px;top:14px;border:0;background:#ffffff22;color:#fff;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer}
+.favorite.saved{background:#fff;color:#d94b8b}
+.card-body{padding:20px}.info{display:flex;justify-content:space-between;margin-bottom:12px;font-size:14px}
+.badge{display:inline-block;padding:6px 10px;border-radius:15px;background:#edf9f3;color:#16804c;font-size:12px;font-weight:bold}
+.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.details-btn,.plan-btn{padding:11px;border:0;border-radius:9px;cursor:pointer;font-weight:bold}
+.details-btn{background:#252943;color:white}.plan-btn{background:#eeeafc;color:#6548bd}
+.details-btn:hover{background:#6548bd}.plan-btn:hover{background:#ddd4fa}
+.no-result{text-align:center;background:var(--card);padding:40px;border-radius:15px;color:var(--muted);display:none}
+
+.panel{margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px}
+.panel h2{margin-bottom:14px}.schedule-list{display:grid;gap:10px}
+.schedule-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px;border:1px solid var(--border);border-radius:12px}
+.remove{border:0;background:#ffe9ef;color:#c83b65;padding:8px 10px;border-radius:8px;cursor:pointer}
+.empty{color:var(--muted);font-size:14px}
+
+.modal{display:none;position:fixed;inset:0;background:#0f111eb8;justify-content:center;align-items:center;padding:20px;z-index:10}
+.modal-box{background:var(--card);color:var(--text);width:470px;max-width:100%;padding:28px;border-radius:18px;position:relative}
+.close{position:absolute;right:18px;top:13px;font-size:25px;cursor:pointer}
+.modal-box h2{color:var(--primary);margin-bottom:15px}.modal-box p{margin:10px 0;color:var(--muted)}
+.modal-actions{display:flex;gap:9px;margin-top:18px}.modal-actions button{flex:1;padding:11px;border:0;border-radius:9px;cursor:pointer;font-weight:bold}
+.toast{position:fixed;right:20px;bottom:20px;background:#20243a;color:#fff;padding:13px 17px;border-radius:10px;opacity:0;transform:translateY(15px);transition:.3s;z-index:20}
+.toast.show{opacity:1;transform:translateY(0)}
+footer{text-align:center;padding:30px;margin-top:35px;color:var(--muted);font-size:13px}
+
+@media(max-width:1000px){.filters{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.topbar{flex-direction:column;align-items:flex-start}.filters,.cards{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.hero h1{font-size:30px}.card-actions{grid-template-columns:1fr}.schedule-item{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div>
+      <div class="logo">🎵 Dynamic <span>Music Festival</span></div>
+      <div class="subtitle">Discover artists, build your personal festival plan, and never miss your favorite performance.</div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" id="themeBtn">🌙 Theme</button>
+      <button class="header-btn" id="savedBtn">❤️ My Lineup</button>
+      <div class="status">● LIVE</div>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <h1>Lineup Explorer</h1>
+  <p>Search, filter, save and plan your perfect festival experience.</p>
+</section>
+
+<section class="stats">
+  <div class="stat"><b id="totalArtists">6</b><span>Artists</span></div>
+  <div class="stat"><b id="totalGenres">5</b><span>Genres</span></div>
+  <div class="stat"><b>3</b><span>Stages</span></div>
+  <div class="stat"><b id="savedCount">0</b><span>My Lineup</span></div>
+</section>
+
+<section class="filters">
+  <div class="filter"><label>SEARCH ARTIST</label><input id="search" placeholder="🔎 Try Arjun, Maya..."></div>
+  <div class="filter"><label>GENRE</label><select id="genre"><option value="all">All Genres</option><option>Pop</option><option>Rock</option><option>EDM</option><option>Indie</option><option>Hip-Hop</option></select></div>
+  <div class="filter"><label>STAGE</label><select id="stage"><option value="all">All Stages</option><option>Main Stage</option><option>Sunset Stage</option><option>Club Stage</option></select></div>
+  <div class="filter"><label>DATE</label><select id="date"><option value="all">All Dates</option><option>Sep 20</option><option>Sep 21</option><option>Sep 22</option></select></div>
+  <button class="reset-btn" id="resetBtn">↻ Reset</button>
+</section>
+
+<div class="quick">
+  <button data-genre="all" class="active">✨ All</button>
+  <button data-genre="EDM">🎧 EDM</button>
+  <button data-genre="Pop">🎤 Pop</button>
+  <button data-genre="Rock">🎸 Rock</button>
+  <button data-genre="Indie">🌿 Indie</button>
+  <button data-genre="Hip-Hop">🔥 Hip-Hop</button>
+</div>
+
+<div class="section-title">
+  <h2>🎤 Festival Performers</h2>
+  <span class="count" id="count"></span>
+</div>
+
+<section class="cards" id="cards">
+  <article class="card" data-name="Arjun Beats" data-genre="EDM" data-stage="Main Stage" data-date="Sep 20" data-time="8:30 PM">
+    <div class="card-top"><button class="favorite" aria-label="Save Arjun Beats">♡</button><h3>Arjun Beats</h3><p>Electronic Dance Music</p></div>
+    <div class="card-body"><div class="info"><span>🎧 Genre</span><b>EDM</b></div><div class="info"><span>📍 Stage</span><b>Main Stage</b></div><div class="info"><span>📅 Date</span><b>Sep 20</b></div><div class="info"><span>⏰ Time</span><b>8:30 PM</b></div><span class="badge">AVAILABLE</span><div class="card-actions"><button class="details-btn">View Details</button><button class="plan-btn">＋ Add to Plan</button></div></div>
+  </article>
+
+  <article class="card" data-name="The Echoes" data-genre="Rock" data-stage="Sunset Stage" data-date="Sep 20" data-time="7:00 PM">
+    <div class="card-top"><button class="favorite" aria-label="Save The Echoes">♡</button><h3>The Echoes</h3><p>Alternative Rock</p></div>
+    <div class="card-body"><div class="info"><span>🎸 Genre</span><b>Rock</b></div><div class="info"><span>📍 Stage</span><b>Sunset Stage</b></div><div class="info"><span>📅 Date</span><b>Sep 20</b></div><div class="info"><span>⏰ Time</span><b>7:00 PM</b></div><span class="badge">AVAILABLE</span><div class="card-actions"><button class="details-btn">View Details</button><button class="plan-btn">＋ Add to Plan</button></div></div>
+  </article>
+
+  <article class="card" data-name="Maya Soul" data-genre="Pop" data-stage="Main Stage" data-date="Sep 21" data-time="9:00 PM">
+    <div class="card-top"><button class="favorite" aria-label="Save Maya Soul">♡</button><h3>Maya Soul</h3><p>Contemporary Pop</p></div>
+    <div class="card-body"><div class="info"><span>🎤 Genre</span><b>Pop</b></div><div class="info"><span>📍 Stage</span><b>Main Stage</b></div><div class="info"><span>📅 Date</span><b>Sep 21</b></div><div class="info"><span>⏰ Time</span><b>9:00 PM</b></div><span class="badge">AVAILABLE</span><div class="card-actions"><button class="details-btn">View Details</button><button class="plan-btn">＋ Add to Plan</button></div></div>
+  </article>
+
+  <article class="card" data-name="Neon Pulse" data-genre="EDM" data-stage="Club Stage" data-date="Sep 21" data-time="10:00 PM">
+    <div class="card-top"><button class="favorite" aria-label="Save Neon Pulse">♡</button><h3>Neon Pulse</h3><p>Electronic / Dance</p></div>
+    <div class="card-body"><div class="info"><span>🎧 Genre</span><b>EDM</b></div><div class="info"><span>📍 Stage</span><b>Club Stage</b></div><div class="info"><span>📅 Date</span><b>Sep 21</b></div><div class="info"><span>⏰ Time</span><b>10:00 PM</b></div><span class="badge">AVAILABLE</span><div class="card-actions"><button class="details-btn">View Details</button><button class="plan-btn">＋ Add to Plan</button></div></div>
+  </article>
+
+  <article class="card" data-name="Riya & The Waves" data-genre="Indie" data-stage="Sunset Stage" data-date="Sep 22" data-time="6:30 PM">
+    <div class="card-top"><button class="favorite" aria-label="Save Riya and The Waves">♡</button><h3>Riya &amp; The Waves</h3><p>Indie Pop</p></div>
+    <div class="card-body"><div class="info"><span>🎸 Genre</span><b>Indie</b></div><div class="info"><span>📍 Stage</span><b>Sunset Stage</b></div><div class="info"><span>📅 Date</span><b>Sep 22</b></div><div class="info"><span>⏰ Time</span><b>6:30 PM</b></div><span class="badge">AVAILABLE</span><div class="card-actions"><button class="details-btn">View Details</button><button class="plan-btn">＋ Add to Plan</button></div></div>
+  </article>
+
+  <article class="card" data-name="MC Nova" data-genre="Hip-Hop" data-stage="Main Stage" data-date="Sep 22" data-time="8:00 PM">
+    <div class="card-top"><button class="favorite" aria-label="Save MC Nova">♡</button><h3>MC Nova</h3><p>Hip-Hop / Rap</p></div>
+    <div class="card-body"><div class="info"><span>🎤 Genre</span><b>Hip-Hop</b></div><div class="info"><span>📍 Stage</span><b>Main Stage</b></div><div class="info"><span>📅 Date</span><b>Sep 22</b></div><div class="info"><span>⏰ Time</span><b>8:00 PM</b></div><span class="badge">AVAILABLE</span><div class="card-actions"><button class="details-btn">View Details</button><button class="plan-btn">＋ Add to Plan</button></div></div>
+  </article>
+</section>
+
+<div class="no-result" id="noResult"><h3>No performers found 😕</h3><p>Try another artist, genre, stage or date.</p></div>
+
+<section class="panel" id="planPanel">
+  <h2>🗓️ My Festival Plan</h2>
+  <div id="scheduleList" class="schedule-list"><p class="empty">Your plan is empty. Add performances you want to attend.</p></div>
+</section>
+</main>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <span class="close" id="closeModal">×</span>
+    <h2 id="modalName"></h2>
+    <p><b>🎵 Genre:</b> <span id="modalGenre"></span></p>
+    <p><b>📍 Stage:</b> <span id="modalStage"></span></p>
+    <p><b>📅 Date:</b> <span id="modalDate"></span></p>
+    <p><b>⏰ Performance:</b> <span id="modalTime"></span></p>
+    <div class="modal-actions"><button id="modalPlan">＋ Add to My Plan</button><button id="modalClose2">Close</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>© 2026 Dynamic Music Festival • Lineup Explorer</footer>
+
+<script>
+const search=document.getElementById("search"),genre=document.getElementById("genre"),stage=document.getElementById("stage"),date=document.getElementById("date");
+const cards=[...document.querySelectorAll(".card")],count=document.getElementById("count"),noResult=document.getElementById("noResult");
+const savedCount=document.getElementById("savedCount"),scheduleList=document.getElementById("scheduleList"),toast=document.getElementById("toast");
+let plan=[],currentCard=null;
+
+function notify(msg){toast.textContent=msg;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1800)}
+
+function filterCards(){
+  const q=search.value.toLowerCase().trim();
+  let visible=0;
+  cards.forEach(card=>{
+    const ok=card.dataset.name.toLowerCase().includes(q) &&
+      (genre.value==="all"||card.dataset.genre===genre.value) &&
+      (stage.value==="all"||card.dataset.stage===stage.value) &&
+      (date.value==="all"||card.dataset.date===date.value);
+    card.style.display=ok?"block":"none"; if(ok)visible++;
+  });
+  count.textContent=visible+" performer"+(visible!==1?"s":"")+" found";
+  noResult.style.display=visible?"none":"block";
+}
+
+function resetFilters(){
+  search.value="";genre.value="all";stage.value="all";date.value="all";
+  document.querySelectorAll(".quick button").forEach(b=>b.classList.remove("active"));
+  document.querySelector('.quick button[data-genre="all"]').classList.add("active");
+  filterCards();
+}
+
+function showDetails(card){
+  currentCard=card;
+  document.getElementById("modalName").textContent=card.dataset.name;
+  document.getElementById("modalGenre").textContent=card.dataset.genre;
+  document.getElementById("modalStage").textContent=card.dataset.stage;
+  document.getElementById("modalDate").textContent=card.dataset.date;
+  document.getElementById("modalTime").textContent=card.dataset.time;
+  document.getElementById("modal").style.display="flex";
+}
+
+function addToPlan(card){
+  if(plan.some(x=>x.name===card.dataset.name)){notify("Already in your plan ❤️");return}
+  plan.push({name:card.dataset.name,genre:card.dataset.genre,stage:card.dataset.stage,date:card.dataset.date,time:card.dataset.time});
+  renderPlan();notify(card.dataset.name+" added to your plan 🎉");
+}
+
+function renderPlan(){
+  savedCount.textContent=plan.length;
+  scheduleList.innerHTML="";
+  if(!plan.length){scheduleList.innerHTML='<p class="empty">Your plan is empty. Add performances you want to attend.</p>';return}
+  plan.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  plan.forEach((item,i)=>{
+    const row=document.createElement("div");row.className="schedule-item";
+    row.innerHTML=`<div><b>${item.name}</b><br><small>${item.date} • ${item.time} • ${item.stage}</small></div><button class="remove" data-index="${i}">Remove</button>`;
+    scheduleList.appendChild(row);
+  });
+  scheduleList.querySelectorAll(".remove").forEach(btn=>btn.onclick=()=>{plan.splice(Number(btn.dataset.index),1);renderPlan();notify("Removed from your plan")});
+}
+
+cards.forEach(card=>{
+  card.querySelector(".details-btn").onclick=()=>showDetails(card);
+  card.querySelector(".plan-btn").onclick=()=>addToPlan(card);
+  card.querySelector(".favorite").onclick=e=>{
+    e.currentTarget.classList.toggle("saved");
+    e.currentTarget.textContent=e.currentTarget.classList.contains("saved")?"♥":"♡";
+    notify(e.currentTarget.classList.contains("saved")?"Saved as favorite ❤️":"Removed from favorites");
+  };
+});
+
+[search,genre,stage,date].forEach(el=>el.addEventListener("input",filterCards));
+document.getElementById("resetBtn").onclick=resetFilters;
+
+document.querySelectorAll(".quick button").forEach(btn=>btn.onclick=()=>{
+  genre.value=btn.dataset.genre;document.querySelectorAll(".quick button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");filterCards();
+});
+
+document.getElementById("closeModal").onclick=()=>document.getElementById("modal").style.display="none";
+document.getElementById("modalClose2").onclick=()=>document.getElementById("modal").style.display="none";
+document.getElementById("modalPlan").onclick=()=>{if(currentCard)addToPlan(currentCard);document.getElementById("modal").style.display="none"};
+window.onclick=e=>{if(e.target===document.getElementById("modal"))document.getElementById("modal").style.display="none"};
+
+document.getElementById("themeBtn").onclick=()=>{
+  document.body.classList.toggle("dark");
+  document.getElementById("themeBtn").textContent=document.body.classList.contains("dark")?"☀️ Light":"🌙 Theme";
+  notify(document.body.classList.contains("dark")?"Dark mode enabled":"Light mode enabled");
+};
+document.getElementById("savedBtn").onclick=()=>document.getElementById("planPanel").scrollIntoView({behavior:"smooth"});
+
+filterCards();renderPlan();
+</script>
+</body>
+</html>
